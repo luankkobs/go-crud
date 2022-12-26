@@ -5,7 +5,7 @@ import (
 	"github.com/luankkobs/go-crud/src/configuration/logger"
 	"github.com/luankkobs/go-crud/src/configuration/validation"
 	"github.com/luankkobs/go-crud/src/controller/model/request"
-	"github.com/luankkobs/go-crud/src/controller/model/response"
+	"github.com/luankkobs/go-crud/src/model"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net/http"
@@ -26,11 +26,15 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	response := response.UserResponse{
-		ID:    "test",
-		Email: userRequest.Email,
-		Name:  userRequest.Name,
-		Age:   userRequest.Age,
+	domain := model.NewUserDomain(
+		userRequest.Email,
+		userRequest.Password,
+		userRequest.Name,
+		userRequest.Age,
+	)
+
+	if err := domain.CreateUser(); err != nil {
+		c.JSON(err.Code, err)
 	}
 
 	logger.Info("User created successfully",
@@ -38,6 +42,5 @@ func CreateUser(c *gin.Context) {
 			Key:    "journey",
 			String: "createUser",
 		})
-
-	c.JSON(http.StatusOK, response)
+	c.String(http.StatusOK, "")
 }
